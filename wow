@@ -26,12 +26,12 @@ export_env_variables() {
 
     export WINEARCH=win64
     export WINEDLLOVERRIDES="mscoree,mshtml=;winemenubuilder.exe="
-    export WINE_REQ_MOD=(win10 arial dxvk)
+    export WINE_REQ_MOD=(win10 arial d3dx11_43 dxvk)
     export WINEPREFIX="$HOME/.local/share/worldofwarcraft"
     export INSTALL_DIR="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net"
     export CLIENT_EXE="$INSTALL_DIR/Battle.net.exe"
 
-    export DXVK_HUD=1
+    export DXVK_HUD=fps
     export DXVK_LOG_LEVEL=none
     export DXVK_STATE_CACHE_PATH="$WINEPREFIX"
     export STAGING_SHARED_MEMORY=1
@@ -48,13 +48,13 @@ create_wineprefix() {
     mkdir -p "$WINEPREFIX"
     wineboot --init >/dev/null 2>&1
     msg "Installing winetricks verbs: ${WINE_REQ_MOD[*]}"
-    winetricks -q --optout "${WINE_REQ_MOD[@]}" >/dev/null 2>&1
-    for link in "$WINEPREFIX/dosdevices"/*; do
-        [[ "$link" =~ 'c:' ]] && continue # for drive_c
-        [[ "$link" =~ 'z:' ]] && continue # for /
-        msg "Removing unnecessary device $(basename $link)"
-        unlink "$link"
-    done
+    winetricks -q --optout "${WINE_REQ_MOD[@]}" #>/dev/null 2>&1
+    #for link in "$WINEPREFIX/dosdevices"/*; do
+    #    [[ "$link" =~ 'c:' ]] && continue # for drive_c
+    #    [[ "$link" =~ 'z:' ]] && continue # for /
+    #    msg "Removing unnecessary device $(basename $link)"
+    #    unlink "$link"
+    #done
     msg "Modifying WINE registry with $REGFILE"
     regedit "$REGFILE" >/dev/null 2>&1
     msg "Waiting for wine processes..."
@@ -62,20 +62,25 @@ create_wineprefix() {
     msg "Wineprefix created: $WINEPREFIX"
 }
 
-cleanup_logs() {
-    msg "Cleaning up log files..."
-    #if [ -d "$INSTALL_DIR" ]; then
-    #    find -H "$INSTALL_DIR" -name "*.log" -delete -print
-    #    if [ -d "$INSTALL_DIR/League of Legends/Logs" ]; then
-    #        find -H "$INSTALL_DIR/League of Legends/Logs" -type f -delete -print
-    #        find -H "$INSTALL_DIR/League of Legends/Logs" -empty -delete -print
-    #    fi
-    #fi
-}
-
 uninstall_WoW() {
     msg "Uninstalling World of Warcraft..."
+    set +e
     rm -rf "$CACHE_DIR" "$WINEPREFIX"
+
+    # clean up menu entries
+    rm -rf \
+        ~/.config/menus/applications-merged/*-Battle.net* \
+        ~/.config/menus/applications-merged/*-World\ of\ Warcraft* \
+        ~/.local/share/applications/wine/Programs/Battle.net \
+        ~/.local/share/applications/wine/Programs/World\ of\ Warcraft \
+        ~/.local/share/desktop-directories/*-Battle.net.directory
+        ~/.local/share/desktop-directories/*-World\ of\ Warcraft.directory
+    find -H ~/.config/menus/applications-merged -empty -delete
+    find -H ~/.config/menus -empty -delete
+    find -H ~/.local/share/applications/wine/Programs -empty -delete
+    find -H ~/.local/share/applications/wine -empty -delete
+    find -H ~/.local/share/applications -empty -delete
+    set -e
 }
 
 install_WoW() {
@@ -142,7 +147,6 @@ Commands:
     install             - Install WoW
     uninstall           - Uninstall WoW
     reinstall           - Reinstall WoW
-    cleanup_logs        - Remove log files
     kill                - Kill the wine processes of the wineprefix
     run <shell comamnd> - Run shell command with environment variables
                           (useful for wine utilities)
@@ -169,9 +173,6 @@ main() {
         reinstall)
             uninstall_WoW
             install_WoW
-            ;;
-        cleanup_logs)
-            cleanup_logs
             ;;
         kill)
             wineserver --kill

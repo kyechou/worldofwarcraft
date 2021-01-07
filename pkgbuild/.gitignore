@@ -1,0 +1,4 @@
+pkg/
+src/
+worldofwarcraft-git/
+*.pkg.tar.zst

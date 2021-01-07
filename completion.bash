@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-complete -W "start install uninstall reinstall cleanup_logs kill run" wow
+complete -W "start install uninstall reinstall kill run" wow
