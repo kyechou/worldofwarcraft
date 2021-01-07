@@ -31,7 +31,6 @@ export_env_variables() {
     export INSTALL_DIR="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net"
     export CLIENT_EXE="$INSTALL_DIR/Battle.net.exe"
 
-    export DXVK_HUD=fps
     export DXVK_LOG_LEVEL=none
     export DXVK_STATE_CACHE_PATH="$WINEPREFIX"
     export STAGING_SHARED_MEMORY=1
@@ -125,7 +124,7 @@ start_WoW() {
     msg "Starting..."
     WIN_CLIENT_EXE="$(winepath -w "$CLIENT_EXE" 2>/dev/null | \
                       sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-    wine "$WIN_CLIENT_EXE" #>/dev/null 2>&1
+    wine "$WIN_CLIENT_EXE" >/dev/null 2>&1
     wineserver --wait
     wait
 }
