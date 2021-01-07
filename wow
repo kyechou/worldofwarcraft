@@ -26,18 +26,17 @@ export_env_variables() {
 
     export WINEARCH=win64
     export WINEDLLOVERRIDES="mscoree,mshtml=;winemenubuilder.exe="
-    export WINE_REQ_MOD=(win10 arial dxvk ie8)
+    export WINE_REQ_MOD=(win10 arial dxvk)
     export WINEPREFIX="$HOME/.local/share/worldofwarcraft"
     export INSTALL_DIR="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net"
     export CLIENT_EXE="$INSTALL_DIR/Battle.net.exe"
 
-    #export DXVK_HUD=compiler
+    export DXVK_HUD=1
     export DXVK_LOG_LEVEL=none
     export DXVK_STATE_CACHE_PATH="$WINEPREFIX"
     export STAGING_SHARED_MEMORY=1
     export __GL_SHADER_DISK_CACHE=1
     export __GL_SHADER_DISK_CACHE_PATH="$WINEPREFIX"
-    #export __GL_THREADED_OPTIMIZATIONS=1
 }
 
 create_wineprefix() {
@@ -49,7 +48,7 @@ create_wineprefix() {
     mkdir -p "$WINEPREFIX"
     wineboot --init >/dev/null 2>&1
     msg "Installing winetricks verbs: ${WINE_REQ_MOD[*]}"
-    winetricks -q --optout --isolate "${WINE_REQ_MOD[@]}" #>/dev/null 2>&1
+    winetricks -q --optout "${WINE_REQ_MOD[@]}" >/dev/null 2>&1
     for link in "$WINEPREFIX/dosdevices"/*; do
         [[ "$link" =~ 'c:' ]] && continue # for drive_c
         [[ "$link" =~ 'z:' ]] && continue # for /
@@ -57,7 +56,7 @@ create_wineprefix() {
         unlink "$link"
     done
     msg "Modifying WINE registry with $REGFILE"
-    regedit "$REGFILE" #>/dev/null 2>&1
+    regedit "$REGFILE" >/dev/null 2>&1
     msg "Waiting for wine processes..."
     wineserver --wait
     msg "Wineprefix created: $WINEPREFIX"
@@ -76,21 +75,7 @@ cleanup_logs() {
 
 uninstall_WoW() {
     msg "Uninstalling World of Warcraft..."
-    set +e
     rm -rf "$CACHE_DIR" "$WINEPREFIX"
-
-    # clean up menu entries
-    #rm -rf \
-    #    ~/.config/menus/applications-merged/*-League\ of\ Legends* \
-    #    ~/.local/share/applications/wine/Programs/Riot\ Games \
-    #    ~/.local/share/desktop-directories/*-League\ of\ Legends.directory \
-    #    ~/.local/share/desktop-directories/*-Riot\ Games.directory
-    #find -H ~/.config/menus/applications-merged -empty -delete
-    #find -H ~/.config/menus -empty -delete
-    #find -H ~/.local/share/applications/wine/Programs -empty -delete
-    #find -H ~/.local/share/applications/wine -empty -delete
-    #find -H ~/.local/share/applications -empty -delete
-    set -e
 }
 
 install_WoW() {
@@ -111,15 +96,13 @@ install_WoW() {
     fi
 
     INSTALLER="$CACHE_DIR/installer.exe"
-    #http://dist.blizzard.com/downloads/bna-installers/322d5bb9ae0318de3d4cde7641c96425/retail.1/Battle.net-Setup-enUS.exe
-    #https://us.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe
-    URL="https://us.battle.net/download/getInstaller?os=win&installer=World-of-Warcraft-Setup.exe"
+    INSTALLER_URL="https://us.battle.net/download/getInstaller?os=win&installer=World-of-Warcraft-Setup.exe"
 
     msg "Downloading installer..."
     mkdir -p "$CACHE_DIR"
-    curl --silent --show-error -Lo "$INSTALLER" "$URL"
+    curl --silent --show-error -Lo "$INSTALLER" "$INSTALLER_URL"
     msg "Installing World of Warcraft..."
-    wine "$INSTALLER" #>/dev/null 2>&1
+    wine "$INSTALLER" >/dev/null 2>&1
     msg "Waiting for wine processes..."
     wineserver --wait
     msg "The game is installed at $INSTALL_DIR"
@@ -167,7 +150,7 @@ EOF
 }
 
 main() {
-    #check_depends
+    check_depends
     export_env_variables
 
     cmd="$1"

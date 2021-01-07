@@ -21,7 +21,7 @@ install:
 	install -Dm644 worldofwarcraft.png      -t $(iconsdir)/hicolor/256x256/apps
 	install -Dm644 worldofwarcraft.reg      -t $(docdir)
 	install -Dm644 LICENSE                  -t $(licensesdir)
-	install -Dm644 completion.bash             $(bashcompdir)/$(pkgname)
+	install -Dm644 completion.bash             $(bashcompdir)/wow
 
 uninstall:
 	@rm -vf $(bindir)/worldofwarcraft
