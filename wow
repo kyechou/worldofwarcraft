@@ -26,7 +26,7 @@ export_env_variables() {
 
     export WINEARCH=win64
     export WINEDLLOVERRIDES="mscoree,mshtml=;winemenubuilder.exe="
-    export WINE_REQ_MOD=(win10 arial d3dx11_43 dxvk)
+    export WINE_REQ_MOD=(win10 arial dxvk)
     export WINEPREFIX="$HOME/.local/share/worldofwarcraft"
     export INSTALL_DIR="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net"
     export CLIENT_EXE="$INSTALL_DIR/Battle.net.exe"
@@ -48,13 +48,7 @@ create_wineprefix() {
     mkdir -p "$WINEPREFIX"
     wineboot --init >/dev/null 2>&1
     msg "Installing winetricks verbs: ${WINE_REQ_MOD[*]}"
-    winetricks -q --optout "${WINE_REQ_MOD[@]}" #>/dev/null 2>&1
-    #for link in "$WINEPREFIX/dosdevices"/*; do
-    #    [[ "$link" =~ 'c:' ]] && continue # for drive_c
-    #    [[ "$link" =~ 'z:' ]] && continue # for /
-    #    msg "Removing unnecessary device $(basename $link)"
-    #    unlink "$link"
-    #done
+    winetricks -q --optout "${WINE_REQ_MOD[@]}" >/dev/null 2>&1
     msg "Modifying WINE registry with $REGFILE"
     regedit "$REGFILE" >/dev/null 2>&1
     msg "Waiting for wine processes..."
